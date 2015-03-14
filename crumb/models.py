@@ -9,13 +9,17 @@ import os
 import localConfig
 
 
+
+
 class Crumb(object):
 	'''
 	Class for individual crumb.
 		- defines, writes, updates, deletes
+
+	Crumb can be instatiated with key AND value, or just key for updating / get / delete
 	'''
 
-	def __init__(self, key, value, index='def'):
+	def __init__(self, key, value=False, index='def'):
 
 		#derive id from key
 		self.id = md5.new(key).hexdigest()
@@ -30,11 +34,11 @@ class Crumb(object):
 		self.fs_full = self.dir_full+self.id
 
 		# group main IO methods
-		self.IO = self.IO_proto(self)
+		self.io = self.IO(self)
 
 
 
-	class IO_proto(object):
+	class IO(object):
 
 		def __init__(self, crumb):			
 			#pass main crumb self (all values same with 'self.crumb' prefix)
@@ -54,7 +58,7 @@ class Crumb(object):
 			if os.path.exists(localConfig.fs_root+self.crumb.dir_l2) == False:
 				os.makedirs(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2)
 
-			# write crumb
+			# write crumb file
 			fhand = open(self.crumb.fs_full,"w")
 			fhand.write(self.crumb.value)
 			fhand.close()
@@ -65,21 +69,43 @@ class Crumb(object):
 			'''
 			retrieve crumb from filesystem
 			'''
-			pass
 
+			# get and retrieve
+			fhand = open(self.crumb.fs_full,"r")
+			return fhand.read()
+			fhand.close()			
+			
 
-		def update(self):
+		def update(self, new_value):
 			'''
 			write crumb to filesystem
 			'''
-			pass
+			fhand = open(self.crumb.fs_full,"w")
+			fhand.write(new_value)
+			# set new self.crumb 
+			self.crumb.value = new_value
+			fhand.close()
+			logging.debug("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+			
 
 
 		def delete(self):
 			'''
-			write crumb to filesystem
+			delete crumb from filesystem
 			'''
-			# delete directory structure if necessary
+			
+			# delete crumb file
+			os.remove(self.crumb.fs_full)
+
+			# if l2 empty, remove
+			if os.listdir(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2) == []:
+				logging.debug("l2 dir empty, removing")
+				os.rmdir(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2)
+
+			# if l1 empty, remove
+			if os.listdir(localConfig.fs_root+self.crumb.dir_l1) == []:
+				logging.debug("l1 dir empty, removing")
+				os.rmdir(localConfig.fs_root+self.crumb.dir_l1)
 			
 			
 
