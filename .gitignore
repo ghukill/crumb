@@ -56,6 +56,6 @@ docs/_build/
 target/
 
 # crumb specific
-config.py
+localConfig.py
 notes.txt
 
