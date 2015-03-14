@@ -21,6 +21,11 @@ class Crumb(object):
 
 	def __init__(self, key, value=False, index='def'):
 
+		# convert both to string
+		key = str(key)
+		if value != False:
+			value = str(value)
+
 		#derive id from key
 		self.id = md5.new(key).hexdigest()
 		self.key = key		
@@ -32,6 +37,9 @@ class Crumb(object):
 		self.dir_l2 = self.id[2:4]+"/"
 		self.dir_full = localConfig.fs_root+self.dir_l1+self.dir_l2
 		self.fs_full = self.dir_full+self.id
+
+		# instantiate rollback object before IO methods created
+		self.rollback = Rollback(self)
 
 		# group main IO methods
 		self.io = self.IO(self)
@@ -49,20 +57,41 @@ class Crumb(object):
 			'''
 			write crumb to filesystem
 			'''
+			
+			try:
 
-			# create directory structure if necessary
-			# check level 1
-			if os.path.exists(localConfig.fs_root+self.crumb.dir_l1) == False:
-				os.makedirs(localConfig.fs_root+self.crumb.dir_l1)
-			# check level 2
-			if os.path.exists(localConfig.fs_root+self.crumb.dir_l2) == False:
-				os.makedirs(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2)
+				# check first if exists, then suggest update
+				if os.path.exists(self.crumb.fs_full) == True:
+					logging.info("crumb exists, consider using update() method")
+					raise IOError("File exists.")
 
-			# write crumb file
-			fhand = open(self.crumb.fs_full,"w")
-			fhand.write(self.crumb.value)
-			fhand.close()
-			logging.debug("successful write key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+				# check level 1, create if neccessary
+				if os.path.exists(localConfig.fs_root+self.crumb.dir_l1) == False:
+					logging.debug("creating l1 dir {l1}".format(l1=self.crumb.dir_l1))
+					os.makedirs(localConfig.fs_root+self.crumb.dir_l1)
+				
+				
+				# check level 2, create if neccessary
+				if os.path.exists(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2) == False:
+					logging.debug("creating l2 dir {l2}".format(l2=self.crumb.dir_l2))
+					os.makedirs(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2)
+			
+
+				# write crumb file
+				fhand = open(self.crumb.fs_full,"w")
+				fhand.write(self.crumb.value)
+				fhand.close()
+				logging.info("successful write key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+
+
+			except OSError, e:
+				print str(e)
+				self.crumb.rollback.rollback_dir_creation()
+
+
+			except IOError, e:
+				print str(e)
+				self.crumb.rollback.rollback_dir_creation()				
 
 
 		def get(self):
@@ -72,8 +101,10 @@ class Crumb(object):
 
 			# get and retrieve
 			fhand = open(self.crumb.fs_full,"r")
-			return fhand.read()
-			fhand.close()			
+			# set to self.crumb
+			self.crumb.value = fhand.read()
+			fhand.close()
+			return self.crumb.value			
 			
 
 		def update(self, new_value):
@@ -85,9 +116,8 @@ class Crumb(object):
 			# set new self.crumb 
 			self.crumb.value = new_value
 			fhand.close()
-			logging.debug("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+			logging.info("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
 			
-
 
 		def delete(self):
 			'''
@@ -97,17 +127,32 @@ class Crumb(object):
 			# delete crumb file
 			os.remove(self.crumb.fs_full)
 
-			# if l2 empty, remove
-			if os.listdir(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2) == []:
-				logging.debug("l2 dir empty, removing")
-				os.rmdir(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2)
-
-			# if l1 empty, remove
-			if os.listdir(localConfig.fs_root+self.crumb.dir_l1) == []:
-				logging.debug("l1 dir empty, removing")
-				os.rmdir(localConfig.fs_root+self.crumb.dir_l1)
-			
+			# cleanup dirs (this is why Rollback might not good name)
+			self.crumb.rollback.rollback_dir_creation()			
 			
 
 
+class Rollback(object):
+	'''
+	Rollback class is a wrapper for functions and data for each crumb transaction, passed as argument
+	'''
+
+	def __init__(self, crumb):
+		# pull in values from crumb
+		self.__dict__.update(crumb.__dict__)
+
+
+	def rollback_dir_creation(self):
+		# if l2 empty, remove
+		l2_full = localConfig.fs_root+self.dir_l1+self.dir_l2
+		if os.path.exists(l2_full) and os.listdir(l2_full) == []:
+			logging.debug("l2 dir empty, removing")
+			os.rmdir(l2_full)
+
+		# if l1 empty, remove
+		l1_full = localConfig.fs_root+self.dir_l1
+		if os.path.exists(l1_full) and os.listdir(l1_full) == []:
+			logging.debug("l1 dir empty, removing")
+			os.rmdir(l1_full)
+				
 
