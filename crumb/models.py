@@ -34,8 +34,7 @@ class Crumb(object):
 
 		# derive fs location
 		self.dir_l1 = self.id[0:2]+"/"
-		self.dir_l2 = self.id[2:4]+"/"
-		self.dir_full = localConfig.fs_root+self.dir_l1+self.dir_l2
+		self.dir_full = localConfig.fs_root+self.dir_l1
 		self.fs_full = self.dir_full+self.id
 
 		# instantiate rollback object before IO methods created
@@ -71,12 +70,6 @@ class Crumb(object):
 					os.makedirs(localConfig.fs_root+self.crumb.dir_l1)
 				
 				
-				# check level 2, create if neccessary
-				if os.path.exists(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2) == False:
-					logging.debug("creating l2 dir {l2}".format(l2=self.crumb.dir_l2))
-					os.makedirs(localConfig.fs_root+self.crumb.dir_l1+self.crumb.dir_l2)
-			
-
 				# write crumb file
 				fhand = open(self.crumb.fs_full,"w")
 				fhand.write(self.crumb.value)
@@ -134,7 +127,7 @@ class Crumb(object):
 
 class Rollback(object):
 	'''
-	Rollback class is a wrapper for functions and data for each crumb transaction, passed as argument
+	Rollback class is a wrapper for functions and data for each crumb transaction, crumb passed as argument
 	'''
 
 	def __init__(self, crumb):
@@ -143,12 +136,6 @@ class Rollback(object):
 
 
 	def rollback_dir_creation(self):
-		# if l2 empty, remove
-		l2_full = localConfig.fs_root+self.dir_l1+self.dir_l2
-		if os.path.exists(l2_full) and os.listdir(l2_full) == []:
-			logging.debug("l2 dir empty, removing")
-			os.rmdir(l2_full)
-
 		# if l1 empty, remove
 		l1_full = localConfig.fs_root+self.dir_l1
 		if os.path.exists(l1_full) and os.listdir(l1_full) == []:
@@ -156,3 +143,9 @@ class Rollback(object):
 			os.rmdir(l1_full)
 				
 
+
+
+
+class CrumbDB(object):
+	
+	pass
