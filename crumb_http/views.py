@@ -38,10 +38,10 @@ def update(key,value):
 
 
 # update crumb value
-@crumb_http_app.route("/delete/<key>/<value>", methods=['GET', 'POST'])
+@crumb_http_app.route("/delete/<key>", methods=['GET', 'POST'])
 def delete(key):
 	
-	crumb_handle = crumbDB.models.Crumb(key,value)
+	crumb_handle = crumbDB.models.Crumb(key)
 
 	if crumb_handle.io.delete() == True:
 		return "Crumb deleted"

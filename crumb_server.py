@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # crumbDB twisted server wrapper
 from twisted.web.wsgi import WSGIResource
 from twisted.web.server import Site
@@ -46,7 +48,14 @@ site = Site(resource)
 if __name__ == '__main__':
 
 	# crumb_http
-	print "Starting crumb_server"
+	print '''
+ ██████╗██████╗ ██╗   ██╗███╗   ███╗██████╗ ██████╗ ██████╗ 
+██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔══██╗██╔══██╗
+██║     ██████╔╝██║   ██║██╔████╔██║██████╔╝██║  ██║██████╔╝
+██║     ██╔══██╗██║   ██║██║╚██╔╝██║██╔══██╗██║  ██║██╔══██╗
+╚██████╗██║  ██║╚██████╔╝██║ ╚═╝ ██║██████╔╝██████╔╝██████╔╝
+╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚═════╝ ╚═════╝ 
+'''
 	reactor.listenTCP( 5001, site, interface="::")
 	
 
