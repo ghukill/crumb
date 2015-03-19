@@ -12,3 +12,7 @@ def timing(f):
         print '%s function took %0.3f ms, %0.3f s' % (f.func_name, (time2-time1)*1000.0, (time2-time1))
         return ret
     return wrap
+
+
+
+

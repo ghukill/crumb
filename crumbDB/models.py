@@ -56,39 +56,25 @@ class Crumb(object):
 		def write(self):
 			'''
 			write crumb to filesystem
-			'''
+			'''			
+
+			# check first if exists, then suggest update
+			if os.path.exists(self.crumb.fs_full) == True:
+				logging.info("crumb exists, consider using update() method")
+				raise IOError("crumb exists")
+
+			# check level 1, create if neccessary
+			if os.path.exists(localConfig.fs_root+self.crumb.dir_l1) == False:
+				logging.debug("creating l1 dir {l1}".format(l1=self.crumb.dir_l1))
+				os.makedirs(localConfig.fs_root+self.crumb.dir_l1)			
 			
-			try:
-
-				# check first if exists, then suggest update
-				if os.path.exists(self.crumb.fs_full) == True:
-					logging.info("crumb exists, consider using update() method")
-					raise IOError("File exists.")
-
-				# check level 1, create if neccessary
-				if os.path.exists(localConfig.fs_root+self.crumb.dir_l1) == False:
-					logging.debug("creating l1 dir {l1}".format(l1=self.crumb.dir_l1))
-					os.makedirs(localConfig.fs_root+self.crumb.dir_l1)
-				
-				
-				# write crumb file
-				fhand = open(self.crumb.fs_full,"w")
-				fhand.write(self.crumb.value)
-				fhand.close()
-				logging.info("successful write key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
-				return True
-
-
-			except OSError, e:
-				print str(e)
-				self.crumb.rollback.rollback_dir_creation()
-				return False
-
-
-			except IOError, e:
-				print str(e)
-				self.crumb.rollback.rollback_dir_creation()	
-				return False			
+			# write crumb file
+			fhand = open(self.crumb.fs_full,"w")
+			fhand.write(self.crumb.value)
+			fhand.close()
+			logging.info("successful write key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+			return True		
+			
 
 
 		@utilities.timing
@@ -96,14 +82,19 @@ class Crumb(object):
 			'''
 			retrieve crumb from filesystem
 			'''
-
 			# get and retrieve
-			fhand = open(self.crumb.fs_full,"r")
-			# set to self.crumb
-			self.crumb.value = fhand.read()
-			fhand.close()
-			logging.info("successful get key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
-			return self.crumb.value			
+			if os.path.exists(self.crumb.fs_full) == True:
+				fhand = open(self.crumb.fs_full,"r")
+				# set to self.crumb
+				self.crumb.value = fhand.read()
+				fhand.close()
+				logging.info("successful get key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+				return self.crumb.value
+
+			else:
+				raise IOError("crumb does not exist")
+			
+			
 			
 
 		@utilities.timing
@@ -111,18 +102,17 @@ class Crumb(object):
 			'''
 			write crumb to filesystem
 			'''
-			try:
-				fhand = open(self.crumb.fs_full,"w")
+			if os.path.exists(self.crumb.fs_full) == True:
+				fhand = open(self.crumb.fs_full,"w")				
 				fhand.write(new_value)
 				# set new self.crumb 
 				self.crumb.value = new_value
 				fhand.close()
 				logging.info("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
 				return True
+			else:
+				raise IOError("crumb does not exist")
 
-			except Exception, e:
-				print str(e)
-				return False
 
 
 		@utilities.timing
@@ -130,18 +120,15 @@ class Crumb(object):
 			'''
 			delete crumb from filesystem
 			'''
-			try:
+			if os.path.exists(self.crumb.fs_full) == True:
 				# delete crumb file
 				os.remove(self.crumb.fs_full)
-
 				# cleanup dirs (this is why Rollback might not good name)
 				self.crumb.rollback.rollback_dir_creation()			
 				logging.info("successful crumb deletion: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
 				return True
-
-			except Exception, e:
-				print str(e)
-				return False
+			else:
+				raise IOError("crumb does not exist")
 			
 
 
