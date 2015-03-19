@@ -1,4 +1,4 @@
-# models for crumb server
+# models for crumbDB
 
 #python modules
 import md5
@@ -7,8 +7,7 @@ import os
 
 #crumb modules
 import localConfig
-
-
+import utilities
 
 
 class Crumb(object):
@@ -19,6 +18,7 @@ class Crumb(object):
 	Crumb can be instatiated with key AND value, or just key for updating / get / delete
 	'''
 
+	@utilities.timing
 	def __init__(self, key, value=False, index='def'):
 
 		# convert both to string
@@ -52,6 +52,7 @@ class Crumb(object):
 			self.crumb = crumb
 
 
+		@utilities.timing
 		def write(self):
 			'''
 			write crumb to filesystem
@@ -75,18 +76,22 @@ class Crumb(object):
 				fhand.write(self.crumb.value)
 				fhand.close()
 				logging.info("successful write key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+				return True
 
 
 			except OSError, e:
 				print str(e)
 				self.crumb.rollback.rollback_dir_creation()
+				return False
 
 
 			except IOError, e:
 				print str(e)
-				self.crumb.rollback.rollback_dir_creation()				
+				self.crumb.rollback.rollback_dir_creation()	
+				return False			
 
 
+		@utilities.timing
 		def get(self):
 			'''
 			retrieve crumb from filesystem
@@ -97,31 +102,46 @@ class Crumb(object):
 			# set to self.crumb
 			self.crumb.value = fhand.read()
 			fhand.close()
+			logging.info("successful get key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
 			return self.crumb.value			
 			
 
+		@utilities.timing
 		def update(self, new_value):
 			'''
 			write crumb to filesystem
 			'''
-			fhand = open(self.crumb.fs_full,"w")
-			fhand.write(new_value)
-			# set new self.crumb 
-			self.crumb.value = new_value
-			fhand.close()
-			logging.info("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
-			
+			try:
+				fhand = open(self.crumb.fs_full,"w")
+				fhand.write(new_value)
+				# set new self.crumb 
+				self.crumb.value = new_value
+				fhand.close()
+				logging.info("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+				return True
 
+			except Exception, e:
+				print str(e)
+				return False
+
+
+		@utilities.timing
 		def delete(self):
 			'''
 			delete crumb from filesystem
 			'''
-			
-			# delete crumb file
-			os.remove(self.crumb.fs_full)
+			try:
+				# delete crumb file
+				os.remove(self.crumb.fs_full)
 
-			# cleanup dirs (this is why Rollback might not good name)
-			self.crumb.rollback.rollback_dir_creation()			
+				# cleanup dirs (this is why Rollback might not good name)
+				self.crumb.rollback.rollback_dir_creation()			
+				logging.info("successful crumb deletion: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+				return True
+
+			except Exception, e:
+				print str(e)
+				return False
 			
 
 
@@ -130,11 +150,13 @@ class Rollback(object):
 	Rollback class is a wrapper for functions and data for each crumb transaction, crumb passed as argument
 	'''
 
+	@utilities.timing
 	def __init__(self, crumb):
 		# pull in values from crumb
 		self.__dict__.update(crumb.__dict__)
 
 
+	@utilities.timing
 	def rollback_dir_creation(self):
 		# if l1 empty, remove
 		l1_full = localConfig.fs_root+self.dir_l1
@@ -147,5 +169,7 @@ class Rollback(object):
 
 
 class CrumbDB(object):
-	
+	'''
+	Consider raw methods to write / get, etc. from here
+	'''
 	pass
