@@ -65,10 +65,10 @@ if __name__ == '__main__':
 '''
 	
 	# crumb_http
-	reactor.listenTCP( 5001, site, interface="::")
+	reactor.listenTCP(5001, site, interface="::")
 
-	# crumb_kafka
-	crumb_kafka_worker().run()
+	# crumb_kafka (not actuall async, holds up all)
+	# crumb_kafka_worker().run()
 
 	# fire reactor
 	reactor.run()
