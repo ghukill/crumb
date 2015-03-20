@@ -32,12 +32,19 @@ from crumb_http import crumb_http_app
 # import crumb_kafka consumer
 import crumb_kafka
 
-# future kafka consumer
-# class kafkaworker(object):
-# 	@defer.inlineCallbacks
-# 	def run(self):
-# 		print "This is listening to Kafka..."
-# 		yield True
+# kafka consumer
+class crumb_kafka_worker(object):
+	@defer.inlineCallbacks
+	def run(self):
+		from kafka import KafkaConsumer
+		consumer = KafkaConsumer("crumb", group_id="crumb_consumer", metadata_broker_list=["localhost:9092"])
+		# initiate listening loop
+		for message in consumer:
+			try:
+				result = crumb_kafka.processMessage(message)
+				logging.info(result)
+			except Exception,e:
+				logging.info(str(e))
 
 
 # crumb_http
@@ -56,8 +63,18 @@ if __name__ == '__main__':
 ╚██████╗██║  ██║╚██████╔╝██║ ╚═╝ ██║██████╔╝██████╔╝██████╔╝
 ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚═════╝ ╚═════╝ 
 '''
-	reactor.listenTCP( 5001, site, interface="::")
 	
+	# crumb_http
+	reactor.listenTCP( 5001, site, interface="::")
+
+	# crumb_kafka
+	crumb_kafka_worker().run()
 
 	# fire reactor
 	reactor.run()
+
+
+
+
+
+
