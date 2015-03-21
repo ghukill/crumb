@@ -16,10 +16,13 @@ class Crumb(object):
 		- defines, writes, updates, deletes
 
 	Crumb can be instatiated with key AND value, or just key for updating / get / delete
+
+	Considered "DB" class for direct access, but so much would be duplicate figuring from this class.
+	So creating optional flag, "DBdirect", that bypasses Rollback features, for minimal i/o processes.
 	'''
 
 	@utilities.timing
-	def __init__(self, key, value=False, index='def'):
+	def __init__(self,key=False,value=False,topic='default',DBdirect=False):
 
 		# convert both to string
 		key = str(key)
@@ -30,15 +33,16 @@ class Crumb(object):
 		self.id = md5.new(key).hexdigest()
 		self.key = key		
 		self.value = value
-		self.index = index
+		self.topic = topic
 
 		# derive fs location
-		self.dir_l1 = self.id[0:2]+"/"
+		self.dir_l1 = self.topic+"/"+self.id[0:2]
 		self.dir_full = localConfig.fs_root+self.dir_l1
 		self.fs_full = self.dir_full+self.id
 
 		# instantiate rollback object before IO methods created
-		self.rollback = Rollback(self)
+		if DBdirect == False:
+			self.rollback = Rollback(self)
 
 		# group main IO methods
 		self.io = self.IO(self)
@@ -137,7 +141,6 @@ class Rollback(object):
 	Rollback class is a wrapper for functions and data for each crumb transaction, crumb passed as argument
 	'''
 
-	@utilities.timing
 	def __init__(self, crumb):
 		# pull in values from crumb
 		self.__dict__.update(crumb.__dict__)
@@ -153,10 +156,9 @@ class Rollback(object):
 				
 
 
-
-
-class CrumbDB(object):
+class DB(object):
 	'''
-	Consider raw methods to write / get, etc. from here
+	We'll need these eventually....
 	'''
+	
 	pass

@@ -10,12 +10,12 @@ import crumbDB
 from crumb_http import crumb_http_app, utilities
 
 # Apache Kafka
-from kafka import SimpleProducer
+# from kafka import SimpleProducer
 
 
 # init Kafka
-kafka = KafkaClient("localhost:9092")
-producer = SimpleProducer(kafka)
+# kafka = KafkaClient("localhost:9092")
+# producer = SimpleProducer(kafka)
 
 
 # write crumb
