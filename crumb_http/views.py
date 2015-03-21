@@ -9,6 +9,14 @@ import localConfig
 import crumbDB
 from crumb_http import crumb_http_app, utilities
 
+# Apache Kafka
+from kafka import SimpleProducer
+
+
+# init Kafka
+kafka = KafkaClient("localhost:9092")
+producer = SimpleProducer(kafka)
+
 
 # write crumb
 @crumb_http_app.route("/write", methods=['GET', 'POST'])
@@ -18,6 +26,10 @@ def write():
 	key,value = utilities.extractKV(request)
 	crumb_handle = crumbDB.models.Crumb(key,value)
 	
+	# routed through kafka
+	# producer.send_messages("crumb", json.loads( { "action": } ))
+
+	# direct crumb
 	try:
 		crumb_transaction = crumb_handle.io.write()
 		return "crumb written"
