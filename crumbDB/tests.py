@@ -78,8 +78,7 @@ def http_getNumRange(start, end, index):
 	arguments: (start, end, index), where "start" and "end" as integers for both key and value, and "index" as new index
 	'''
 	for x in range(start,end):
-		g = models.Crumb(x, False, index)
-		g.io.get()
+		requests.get("http://localhost:5001/write/{index}/?key={x}&value={x}".format(index=index,x=x))
 
 
 

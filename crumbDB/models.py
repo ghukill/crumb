@@ -54,6 +54,7 @@ class Crumb(object):
 		self.io = self.IO(self)
 
 
+
 	# release crumb_lock
 	def release_crumb_lock(self):
 		logging.info("releasing {crumb_lock_id}".format(crumb_lock_id=self.crumb_lock_id))
@@ -171,7 +172,7 @@ class Rollback(object):
 
 class DB(object):
 	'''
-	We'll need these eventually....
+	We'll need this eventually....
 	'''
 	
 	pass
