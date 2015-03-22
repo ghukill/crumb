@@ -8,6 +8,7 @@ import os
 #crumb modules
 import localConfig
 import utilities
+from utilities import crumb_lock
 
 
 class Crumb(object):
@@ -22,21 +23,26 @@ class Crumb(object):
 	'''
 
 	@utilities.timing
-	def __init__(self,key=False,value=False,topic='default',DBdirect=False):
+	def __init__(self, key=False, value=False, topic='default', DBdirect=False):
+
+
 
 		# convert both to string
 		key = str(key)
 		if value != False:
 			value = str(value)
 
-		#derive id from key
+		# derive id from key
 		self.id = md5.new(key).hexdigest()
+		self.topic = str(topic)
+		self.crumb_lock_id = self.topic+"|"+self.id
+
+		# set key and value
 		self.key = key		
 		self.value = value
-		self.topic = topic
 
 		# derive fs location
-		self.dir_l1 = self.topic+"/"+self.id[0:2]
+		self.dir_l1 = self.topic+"/"+self.id[0:2]+"/"
 		self.dir_full = localConfig.fs_root+self.dir_l1
 		self.fs_full = self.dir_full+self.id
 
@@ -48,6 +54,13 @@ class Crumb(object):
 		self.io = self.IO(self)
 
 
+	# release crumb_lock
+	def release_crumb_lock(self):
+		logging.info("releasing {crumb_lock_id}".format(crumb_lock_id=self.crumb_lock_id))
+		crumb_lock.discard(self.crumb_lock_id)
+		return True
+	
+
 
 	class IO(object):
 
@@ -55,7 +68,7 @@ class Crumb(object):
 			#pass main crumb self (all values same with 'self.crumb' prefix)
 			self.crumb = crumb
 
-
+		@utilities.crumbLockDec
 		@utilities.timing
 		def write(self):
 			'''
@@ -68,9 +81,9 @@ class Crumb(object):
 				raise IOError("crumb exists")
 
 			# check level 1, create if neccessary
-			if os.path.exists(localConfig.fs_root+self.crumb.dir_l1) == False:
+			if os.path.exists(self.crumb.dir_full) == False:
 				logging.debug("creating l1 dir {l1}".format(l1=self.crumb.dir_l1))
-				os.makedirs(localConfig.fs_root+self.crumb.dir_l1)			
+				os.makedirs(self.crumb.dir_full)			
 			
 			# write crumb file
 			fhand = open(self.crumb.fs_full,"w")
@@ -80,7 +93,7 @@ class Crumb(object):
 			return True		
 			
 
-
+		@utilities.crumbLockDec
 		@utilities.timing
 		def get(self):
 			'''
@@ -100,7 +113,7 @@ class Crumb(object):
 			
 			
 			
-
+		@utilities.crumbLockDec
 		@utilities.timing
 		def update(self, new_value):
 			'''
@@ -118,7 +131,7 @@ class Crumb(object):
 				raise IOError("crumb does not exist")
 
 
-
+		@utilities.crumbLockDec
 		@utilities.timing
 		def delete(self):
 			'''
@@ -162,3 +175,4 @@ class DB(object):
 	'''
 	
 	pass
+

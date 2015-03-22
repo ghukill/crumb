@@ -19,12 +19,12 @@ from crumb_http import crumb_http_app, utilities
 
 
 # write crumb
-@crumb_http_app.route("/write", methods=['GET', 'POST'])
-def write():
+@crumb_http_app.route("/write/<index>/", methods=['GET', 'POST'])
+def write(index):
 
 	# function to return key / value tuple
 	key,value = utilities.extractKV(request)
-	crumb_handle = crumbDB.models.Crumb(key,value)
+	crumb_handle = crumbDB.models.Crumb(key,value,index)
 	
 	# routed through kafka
 	# producer.send_messages("crumb", json.loads( { "action": } ))
@@ -35,58 +35,59 @@ def write():
 		return "crumb written"
 	except Exception, e:
 		logging.debug(str(e))
+		crumb_handle.release_crumb_lock()
 		return str(e)	
 
 
 # get crumb value
-@crumb_http_app.route("/get", methods=['GET', 'POST'])
-def get():
+@crumb_http_app.route("/get/<index>/", methods=['GET', 'POST'])
+def get(index):
 
 	# function to return key / value tuple
 	key,value = utilities.extractKV(request)
-	crumb_handle = crumbDB.models.Crumb(key)
+	crumb_handle = crumbDB.models.Crumb(key,False,index)
 
 	try:
 		crumb_handle.io.get()
 		return crumb_handle.value
 	except Exception, e:
 		logging.debug(str(e))
+		crumb_handle.release_crumb_lock()
 		return str(e)
 
 
 # update crumb value
-@crumb_http_app.route("/update", methods=['GET', 'POST'])
-def update():
+@crumb_http_app.route("/update/<index>/", methods=['GET', 'POST'])
+def update(index):
 	
 	# function to return key / value tuple
 	key,value = utilities.extractKV(request)
-	crumb_handle = crumbDB.models.Crumb(key,value)
+	crumb_handle = crumbDB.models.Crumb(key,value,index)
 	
 	try:
 		crumb_handle.io.update(value)
 		return "crumb updated"
 	except Exception, e:
 		logging.debug(str(e))
+		crumb_handle.release_crumb_lock()
 		return str(e)
 
 
 # update crumb value
-@crumb_http_app.route("/delete", methods=['GET', 'POST'])
-def delete():
+@crumb_http_app.route("/delete/<index>/", methods=['GET', 'POST'])
+def delete(index):
 
 	# function to return key / value tuple
 	key,value = utilities.extractKV(request)
-	crumb_handle = crumbDB.models.Crumb(key)
+	crumb_handle = crumbDB.models.Crumb(key,False,index)
 
 	try:
 		crumb_handle.io.delete()
 		return "crumb deleted"
 	except:
 		logging.debug(str(e))
+		crumb_handle.release_crumb_lock()
 		return str(e)
-
-
-
 
 
 

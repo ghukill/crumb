@@ -10,6 +10,7 @@ def extractKV(request):
 			v = request.form['value']
 		except:
 			v = False
+		
 
 
 	if request.method == 'GET':
@@ -21,6 +22,9 @@ def extractKV(request):
 			v = request.args.get('value')
 		except:
 			v = False
+		
 
 
 	return(k,v)
+
+
