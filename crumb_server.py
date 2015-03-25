@@ -4,7 +4,7 @@
 from twisted.web.wsgi import WSGIResource
 from twisted.web.server import Site
 from twisted.internet import reactor, defer
-from twisted.internet.task import deferLater
+from twisted.internet.task import deferLater, LoopingCall
 from twisted.web.server import NOT_DONE_YET
 from twisted.web import server, resource
 from twisted.python import log
@@ -17,6 +17,12 @@ import time
 # local
 import localConfig
 
+# import crumb_http flask app
+from crumb_http import crumb_http_app
+
+# import crumb_kafka consumer
+import crumb_kafka
+
 '''
 This Twisted Server wraps the following:
 	- crumbDB: core crumbDB modules
@@ -25,27 +31,6 @@ This Twisted Server wraps the following:
 
 Each access point import crumbDB
 '''
-
-# import crumb_http flask app
-from crumb_http import crumb_http_app
-
-# import crumb_kafka consumer
-import crumb_kafka
-
-# kafka consumer
-class crumb_kafka_worker(object):
-	@defer.inlineCallbacks
-	def run(self):
-		from kafka import KafkaConsumer
-		consumer = KafkaConsumer("crumb", group_id="crumb_consumer", metadata_broker_list=["localhost:9092"])
-		# initiate listening loop
-		for message in consumer:
-			try:
-				result = crumb_kafka.processMessage(message)
-				logging.info(result)
-			except Exception,e:
-				logging.info(str(e))
-
 
 # crumb_http
 resource = WSGIResource(reactor, reactor.getThreadPool(), crumb_http_app)
@@ -67,8 +52,9 @@ if __name__ == '__main__':
 	# crumb_http
 	reactor.listenTCP(5001, site, interface="::")
 
-	# crumb_kafka (not actuall async, holds up all)
-	# crumb_kafka_worker().run()
+	# looping listener for crumb_kafka
+	lc = LoopingCall(crumb_kafka.crumb_kafka_looper().consume)
+	lc.start(.1)
 
 	# fire reactor
 	reactor.run()
