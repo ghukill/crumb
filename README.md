@@ -15,14 +15,14 @@ Requirements:
 * python-kafka (pip install)
 
 To install / use:
-# <a href="http://kafka.apache.org/downloads.html">download Apache Kafka</a>
+*# <a href="http://kafka.apache.org/downloads.html">download Apache Kafka</a>
 
-# fire up zookeeper and apache kafka from unzipped / untarred kafka directory:
-## start zookeeper: bin/zookeeper-server-start.sh config/zookeeper.properties
-## start kafka server: bin/kafka-server-start.sh config/server.properties
-## create kafka topic ('crumb_air' is default): bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic crumb_air --partitions 1 --replication-factor 1
+* fire up zookeeper and apache kafka from unzipped / untarred kafka directory:
+** start zookeeper: bin/zookeeper-server-start.sh config/zookeeper.properties
+** start kafka server: bin/kafka-server-start.sh config/server.properties
+** create kafka topic ('crumb_air' is default): bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic crumb_air --partitions 1 --replication-factor 1
 
-# start twisted server that houses most of the moving parts: python crumb_server.py
+* start twisted server that houses most of the moving parts: python crumb_server.py
 
 
 
