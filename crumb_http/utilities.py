@@ -27,4 +27,3 @@ def extractKV(request):
 
 	return(k,v)
 
-

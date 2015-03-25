@@ -48,5 +48,7 @@ class crumb_kafka_looper(object):
 			return result
 		
 		except Exception, e:
+			crumb_handle.release_crumb_lock()
 			logging.debug(str(e))
+			return str(e)
 

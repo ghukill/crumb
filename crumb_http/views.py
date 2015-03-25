@@ -19,31 +19,29 @@ kafka = KafkaClient("localhost:9092")
 producer = SimpleProducer(kafka)
 
 
+
 # write crumb
 @crumb_http_app.route("/write/<index>/", methods=['GET', 'POST'])
 def write(index):
 
-	# function to return key / value tuple
-	key,value = utilities.extractKV(request)
-	crumb_handle = crumbDB.models.Crumb(key,value,index)
-	
-	# # direct crumb
-	# try:
-	# 	crumb_transaction = crumb_handle.io.write()
-	# 	return "crumb written"
-	# except Exception, e:
-	# 	logging.debug(str(e))
-	# 	crumb_handle.release_crumb_lock()
-	# 	return str(e)	
-
-	# routed through kafka
 	try:
-		result = producer.send_messages("crumb_air", json.dumps( { "action":"write", "key":key, "value":value, "index":index } ))
+		result = writeCrumb(index, request, write_type="write")
 		return "crumb written"
 	except Exception, e:
-		logging.debug(str(e))
-		crumb_handle.release_crumb_lock()
-		return str(e)	
+		return str(e)
+
+
+
+# update crumb value
+@crumb_http_app.route("/update/<index>/", methods=['GET', 'POST'])
+def update(index):
+
+	try:
+		result = writeCrumb(index, request, write_type="update")
+		return "crumb updated"
+	except Exception, e:
+		return str(e)
+	
 
 
 # get crumb value
@@ -64,26 +62,6 @@ def get(index):
 		return str(e)
 
 
-# update crumb value
-@crumb_http_app.route("/update/<index>/", methods=['GET', 'POST'])
-def update(index):
-
-	'''
-	Consider integrating with write()
-	'''
-	
-	# function to return key / value tuple
-	key,value = utilities.extractKV(request)
-	crumb_handle = crumbDB.models.Crumb(key,value,index)
-	
-	try:
-		crumb_handle.io.update(value)
-		return "crumb updated"
-	except Exception, e:
-		logging.debug(str(e))
-		crumb_handle.release_crumb_lock()
-		return str(e)
-
 
 # update crumb value
 @crumb_http_app.route("/delete/<index>/", methods=['GET', 'POST'])
@@ -93,26 +71,35 @@ def delete(index):
 	key,value = utilities.extractKV(request)
 	crumb_handle = crumbDB.models.Crumb(key,False,index)
 
-	# # straight through crumbDB
-	# try:
-	# 	crumb_handle.io.delete()
-	# 	return "crumb deleted"
-	# except:
-	# 	logging.debug(str(e))
-	# 	crumb_handle.release_crumb_lock()
-	# 	return str(e)
-
-	# routed through kafka
 	try:
 		result = producer.send_messages("crumb_air", json.dumps( { "action":"delete", "key":key, "value":value, "index":index } ))
 		return "crumb deleted"
 	except Exception, e:
 		logging.debug(str(e))
 		crumb_handle.release_crumb_lock()
-		return str(e)	
+		return str(e)
 
 
 
+# abstracted function to write / update crumbs
+def writeCrumb(index, request, write_type):
+
+	# function to return key / value tuple
+	key,value = utilities.extractKV(request)
+	crumb_handle = crumbDB.models.Crumb(key,value,index)
+
+	# determine if write OR update
+	if write_type == "write":
+		if crumb_handle.exists == True:
+			raise IOError("crumb already exists")
+
+	# perform write
+	try:
+		result = producer.send_messages("crumb_air", json.dumps( { "action":write_type, "key":key, "value":value, "index":index } ))
+	except Exception, e:
+		logging.debug(str(e))
+		crumb_handle.release_crumb_lock()
+		return str(e)
 
 
 

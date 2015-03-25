@@ -12,6 +12,7 @@ from utilities import crumb_lock
 
 
 class Crumb(object):
+	
 	'''
 	Class for individual crumb.
 		- defines, writes, updates, deletes
@@ -46,6 +47,12 @@ class Crumb(object):
 		self.dir_full = localConfig.fs_root+self.dir_l1
 		self.fs_full = self.dir_full+self.id
 
+		# check if exists
+		if os.path.exists(self.fs_full) == True:
+			self.exists = True
+		else:
+			self.exists = False
+
 		# instantiate rollback object before IO methods created
 		if DBdirect == False:
 			self.rollback = Rollback(self)
@@ -74,10 +81,9 @@ class Crumb(object):
 		def write(self):
 			'''
 			write crumb to filesystem
-			'''			
-
+			'''		
 			# check first if exists, then suggest update
-			if os.path.exists(self.crumb.fs_full) == True:
+			if self.crumb.exists == True:
 				logging.info("crumb exists, consider using update() method")
 				raise IOError("crumb exists")
 
@@ -94,6 +100,7 @@ class Crumb(object):
 			return True		
 			
 
+
 		@utilities.crumbLockDec
 		@utilities.timing
 		def get(self):
@@ -101,7 +108,7 @@ class Crumb(object):
 			retrieve crumb from filesystem
 			'''
 			# get and retrieve
-			if os.path.exists(self.crumb.fs_full) == True:
+			if self.crumb.exists == True:
 				fhand = open(self.crumb.fs_full,"r")
 				# set to self.crumb
 				self.crumb.value = fhand.read()
@@ -116,20 +123,19 @@ class Crumb(object):
 			
 		@utilities.crumbLockDec
 		@utilities.timing
-		def update(self, new_value):
+		def update(self):
 			'''
 			write crumb to filesystem
 			'''
-			if os.path.exists(self.crumb.fs_full) == True:
+			if self.crumb.exists == True:
 				fhand = open(self.crumb.fs_full,"w")				
-				fhand.write(new_value)
-				# set new self.crumb 
-				self.crumb.value = new_value
+				fhand.write(self.crumb.value)
 				fhand.close()
 				logging.info("successful update key: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
 				return True
 			else:
 				raise IOError("crumb does not exist")
+
 
 
 		@utilities.crumbLockDec
@@ -138,7 +144,7 @@ class Crumb(object):
 			'''
 			delete crumb from filesystem
 			'''
-			if os.path.exists(self.crumb.fs_full) == True:
+			if self.crumb.exists == True:
 				# delete crumb file
 				os.remove(self.crumb.fs_full)
 				# cleanup dirs (this is why Rollback might not good name)
@@ -151,6 +157,7 @@ class Crumb(object):
 
 
 class Rollback(object):
+	
 	'''
 	Rollback class is a wrapper for functions and data for each crumb transaction, crumb passed as argument
 	'''
@@ -168,12 +175,4 @@ class Rollback(object):
 			logging.debug("l1 dir empty, removing")
 			os.rmdir(l1_full)
 				
-
-
-class DB(object):
-	'''
-	We'll need this eventually....
-	'''
-	
-	pass
 
