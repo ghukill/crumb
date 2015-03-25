@@ -1,13 +1,13 @@
 # config for crumb
+
+# python modules
 import logging
 
-# location of main read / write directory
-'''
-Note: absolute path, requires trailing slash. e.g. /foo/bar/
-'''
-fs_root = "/storage/crumb_fs/"
-
+# location of main read / write directory (needs trailing slash)
+fs_root = "/foo/bar/crumb_storage"
 
 # logging level
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
+# default crumb_http port:
+crumb_http_port = ####

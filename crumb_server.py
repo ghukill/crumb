@@ -26,7 +26,7 @@ import crumb_kafka
 This Twisted Server wraps the following:
 	- crumbDB: core crumbDB modules
 	- crumb_http: flask for HTTP and API access
-	- crumb_kafka (future): Apache Kafka consumer that interacts with crumbDB
+	- crumb_kafka: Apache Kafka consumer that interacts with crumbDB
 
 Each access point import crumbDB
 '''

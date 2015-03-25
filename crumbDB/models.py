@@ -24,7 +24,7 @@ class Crumb(object):
 	'''
 
 	@utilities.timing
-	def __init__(self, key=False, value=False, topic='default', DBdirect=False):
+	def __init__(self, key, value=False, index='default', DBdirect=False):
 
 
 
@@ -35,15 +35,15 @@ class Crumb(object):
 
 		# derive id from key
 		self.id = md5.new(key).hexdigest()
-		self.topic = str(topic)
-		self.crumb_lock_id = self.topic+"|"+self.id
+		self.index = str(index)
+		self.crumb_lock_id = self.index+"|"+self.id
 
 		# set key and value
 		self.key = key		
 		self.value = value
 
 		# derive fs location
-		self.dir_l1 = self.topic+"/"+self.id[0:2]+"/"
+		self.dir_l1 = self.index+"/"+self.id[0:2]+"/"
 		self.dir_full = localConfig.fs_root+self.dir_l1
 		self.fs_full = self.dir_full+self.id
 
@@ -82,6 +82,11 @@ class Crumb(object):
 			'''
 			write crumb to filesystem
 			'''		
+			# make sure has key
+			if self.crumb.key == None:
+				logging.info("crumb does not have a key, aborting write")
+				raise Exception("no key provided")
+
 			# check first if exists, then suggest update
 			if self.crumb.exists == True:
 				logging.info("crumb exists, consider using update() method")
