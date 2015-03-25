@@ -11,7 +11,7 @@ from twisted.python import log
 
 # python modules
 import json
-import logging 
+import logging
 import time
 
 # local
@@ -22,7 +22,6 @@ from crumb_http import crumb_http_app
 
 # import crumb_kafka consumer
 import crumb_kafka
-
 '''
 This Twisted Server wraps the following:
 	- crumbDB: core crumbDB modules
@@ -39,8 +38,8 @@ site = Site(resource)
 # run as script
 if __name__ == '__main__':
 
-	# crumb_http
-	print '''
+    # crumb_http
+    print '''
  ██████╗██████╗ ██╗   ██╗███╗   ███╗██████╗ ██████╗ ██████╗ 
 ██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔══██╗██╔══██╗
 ██║     ██████╔╝██║   ██║██╔████╔██║██████╔╝██║  ██║██████╔╝
@@ -48,19 +47,13 @@ if __name__ == '__main__':
 ╚██████╗██║  ██║╚██████╔╝██║ ╚═╝ ██║██████╔╝██████╔╝██████╔╝
 ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚═════╝ ╚═════╝ 
 '''
-	
-	# crumb_http
-	reactor.listenTCP(5001, site, interface="::")
 
-	# looping listener for crumb_kafka
-	lc = LoopingCall(crumb_kafka.crumb_kafka_looper().consume)
-	lc.start(.1)
+    # crumb_http
+    reactor.listenTCP(5001, site, interface="::")
 
-	# fire reactor
-	reactor.run()
+    # looping listener for crumb_kafka
+    lc = LoopingCall(crumb_kafka.crumb_kafka_looper().consume)
+    lc.start(.1)
 
-
-
-
-
-
+    # fire reactor
+    reactor.run()
