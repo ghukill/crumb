@@ -15,7 +15,7 @@ Requirements:
 * python-kafka (pip install)
 
 To install / use:
-*# <a href="http://kafka.apache.org/downloads.html">download Apache Kafka</a>
+* <a href="http://kafka.apache.org/downloads.html">download Apache Kafka</a>
 
 * fire up zookeeper and apache kafka from unzipped / untarred kafka directory:
 ** start zookeeper: bin/zookeeper-server-start.sh config/zookeeper.properties
