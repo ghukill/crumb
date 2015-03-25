@@ -93,6 +93,10 @@ def writeCrumb(index, request, write_type):
 		if crumb_handle.exists == True:
 			raise IOError("crumb already exists")
 
+	if write_type == "update":
+		if crumb_handle.exists == False:
+			raise IOError("crumb does not exist to update")
+
 	# perform write
 	try:
 		result = producer.send_messages("crumb_air", json.dumps( { "action":write_type, "key":key, "value":value, "index":index } ))

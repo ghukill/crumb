@@ -50,8 +50,6 @@ def runAllRangeTests():
 	new_value = 'updated'
 	index = str(int(random.random() * 100000))
 
-	
-
 	writeNumRange(start,end,index)
 	getNumRange(start,end,index)
 	updateNumRange(start,end,index,new_value)
