@@ -21,7 +21,7 @@ producer = SimpleProducer(kafka)
 
 
 # write crumb
-@crumb_http_app.route("/write/<index>/", methods=['GET', 'POST'])
+@crumb_http_app.route("{prefix}/write/<index>/".format(prefix=localConfig.crumb_http_prefix), methods=['GET', 'POST'])
 def write(index):
 
 	try:
@@ -33,7 +33,7 @@ def write(index):
 
 
 # update crumb value
-@crumb_http_app.route("/update/<index>/", methods=['GET', 'POST'])
+@crumb_http_app.route("{prefix}/update/<index>/".format(prefix=localConfig.crumb_http_prefix), methods=['GET', 'POST'])
 def update(index):
 
 	try:
@@ -45,7 +45,7 @@ def update(index):
 
 
 # get crumb value
-@crumb_http_app.route("/get/<index>/", methods=['GET', 'POST'])
+@crumb_http_app.route("{prefix}/get/<index>/".format(prefix=localConfig.crumb_http_prefix), methods=['GET', 'POST'])
 def get(index):
 
 	# function to return key / value tuple
@@ -64,7 +64,7 @@ def get(index):
 
 
 # update crumb value
-@crumb_http_app.route("/delete/<index>/", methods=['GET', 'POST'])
+@crumb_http_app.route("{prefix}/delete/<index>/".format(prefix=localConfig.crumb_http_prefix), methods=['GET', 'POST'])
 def delete(index):
 
 	# function to return key / value tuple

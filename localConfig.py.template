@@ -11,3 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # default crumb_http port:
 crumb_http_port = ####
+
+# prefix for reverse_proxy
+# if none, leave blank, otherwise encapsulate lead with backslash, but remove at end, e.g. "/crumb"
+crumb_http_prefix = "/crumb"
