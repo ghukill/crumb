@@ -49,7 +49,7 @@ if __name__ == '__main__':
 '''
 
     # crumb_http
-    reactor.listenTCP(5001, site, interface="::")
+    reactor.listenTCP(localConfig.crumb_http_port, site, interface="::")
 
     # looping listener for crumb_kafka
     lc = LoopingCall(crumb_kafka.crumb_kafka_looper().consume)
