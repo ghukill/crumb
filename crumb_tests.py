@@ -101,7 +101,7 @@ def kafka_getNumRange(start, end, index):
 	arguments: (start, end, index), where "start" and "end" as integers for both key and value, and "index" as new index
 	'''
 	for x in range(start,end):
-		result = producer.send_messages("crumb_air", json.dumps( { "action":"get", "key":x, "value":x, "index":index } ))
+		result = producer.send_messages("crumb_air", json.dumps( { "action":"get", "key":x, "index":index } ))
 
 
 
@@ -121,7 +121,7 @@ def kafka_deleteNumRange(start, end, index):
 	arguments: (start, end, index), where "start" and "end" as integers for key, "new_value" as new value, and "index" as new index
 	'''
 	for x in range(start,end):
-		result = producer.send_messages("crumb_air", json.dumps( { "action":"delete", "key":x, "value":x, "index":index } ))
+		result = producer.send_messages("crumb_air", json.dumps( { "action":"delete", "key":x, "index":index } ))
 
 
 @utilities.timing

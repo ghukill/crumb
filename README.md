@@ -36,7 +36,6 @@ Everything is wrapped in Twisted server, with end goal of providing crumbDB as s
 * delete crumb: http://[host]/[prefix if applicable]/update/[index]/?key=foo
 
 ### Console API - through Kafka
-<p>Current limitation: have to send False as value for get / delete, even though they don't really need values</p>
 
 ```
 # Apache Kafka
@@ -51,7 +50,7 @@ trans_dict = { "action":"write", "key":"foo", "value":"bar", "index":"testing" }
 result = producer.send_messages("crumb_air", json.dumps( trans_dict ))
 
 # get crumb
-trans_dict = { "action":"get", "key":"foo", "value":False, "index":"testing" }
+trans_dict = { "action":"get", "key":"foo", "index":"testing" }
 result = producer.send_messages("crumb_air", json.dumps( trans_dict ))
 
 # update crumb
@@ -59,6 +58,6 @@ trans_dict = { "action":"udpate", "key":"foo", "value":"zag", "index":"testing" 
 result = producer.send_messages("crumb_air", json.dumps( trans_dict ))
 
 # delete crumb
-trans_dict = { "action":"delete", "key":"foo", "value":False, "index":"testing" }
+trans_dict = { "action":"delete", "key":"foo", "index":"testing" }
 result = producer.send_messages("crumb_air", json.dumps( trans_dict ))
 ```
