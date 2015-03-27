@@ -37,7 +37,8 @@ Everything is wrapped in Twisted server, with end goal of providing crumbDB as s
 
 ### Console API - through Kafka
 <p>Current limitation: have to send False as value for get / delete, even though they don't really need values</p>
-'''
+
+```
 # Apache Kafka
 from kafka import KafkaClient, SimpleProducer
 
@@ -60,3 +61,4 @@ result = producer.send_messages("crumb_air", json.dumps( trans_dict ))
 # delete crumb
 trans_dict = { "action":"delete", "key":"foo", "value":False, "index":"testing" }
 result = producer.send_messages("crumb_air", json.dumps( trans_dict ))
+```
