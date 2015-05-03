@@ -3,7 +3,6 @@
 #python core
 import time
 
-# where to put this?
 # crumb_lock
 crumb_lock = set()
 
@@ -17,14 +16,6 @@ def timing(f):
 		print '%s function took %0.3f ms, %0.3f s' % (f.func_name, (time2-time1)*1000.0, (time2-time1))
 		return ret
 	return wrap
-
-
-# def crumbLock(crumb_lock_id):
-# 	# lock crumb
-# 	if crumb_lock_id in crumb_lock:
-# 		raise Exception("crumb is locked")
-# 	else:
-# 		crumb_lock.add(crumb_lock_id)
 
 
 def crumbLockDec(f):

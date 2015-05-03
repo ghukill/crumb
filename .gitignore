@@ -58,4 +58,4 @@ target/
 # crumb specific
 localConfig.py
 notes.txt
-
+nohup.out

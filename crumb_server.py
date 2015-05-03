@@ -13,6 +13,7 @@ from twisted.python import log
 import json
 import logging
 import time
+import lmdb
 
 # local
 import localConfig
@@ -30,6 +31,7 @@ This Twisted Server wraps the following:
 
 Each access point import crumbDB
 '''
+
 
 # crumb_http
 resource = WSGIResource(reactor, reactor.getThreadPool(), crumb_http_app)

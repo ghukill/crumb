@@ -1,16 +1,20 @@
 # models for crumbDB
 
-#python modules
+# python modules
 import md5
 import logging
 import os
 
-#crumb modules
+# crumb modules
 import localConfig
 import utilities
 from utilities import crumb_lock
 
+# setup env
+import lmdb
+env = lmdb.open('/tmp/lmdb3')
 
+# --- FILESYSTEM ---#
 class Crumb(object):
 	
 	'''
@@ -155,6 +159,144 @@ class Crumb(object):
 				# cleanup dirs (this is why Rollback might not good name)
 				self.crumb.rollback.rollback_dir_creation()			
 				logging.info("successful crumb deletion: {key} @ location: {fs_full}".format(key=self.crumb.key,fs_full=self.crumb.fs_full))
+				return True
+			else:
+				raise IOError("crumb does not exist")
+			
+
+class CrumbLMDB(object):
+	
+	'''
+	Class for individual crumb.
+		- defines, writes, updates, deletes
+
+	Crumb can be instatiated with key AND value, or just key for updating / get / delete
+
+	Considered "DB" class for direct access, but so much would be duplicate figuring from this class.
+	So creating optional flag, "DBdirect", that bypasses Rollback features, for minimal i/o processes.
+	'''
+
+	@utilities.timing
+	def __init__(self, key, value=False, index='default', DBdirect=False):
+
+		# convert both to string
+		key = str(key)
+		if value != False:
+			value = str(value)
+
+		# derive id from key
+		self.id = md5.new(key).hexdigest()
+		self.index = str(index)
+		self.crumb_lock_id = self.index+"|"+self.id
+
+		# set key and value
+		self.key = key		
+		self.value = value
+
+		# check if exists
+		with env.begin(write=False) as txn:
+			db_curs = txn.cursor()
+			if db_curs.set_key(self.id) == True:
+				self.exists = True
+			else:
+				self.exists = False
+
+		# instantiate rollback object before IO methods created
+		if DBdirect == False:
+			self.rollback = Rollback(self)
+
+		# group main IO methods
+		self.io = self.IO(self)
+
+
+
+	# release crumb_lock
+	def release_crumb_lock(self):
+		logging.info("releasing {crumb_lock_id}".format(crumb_lock_id=self.crumb_lock_id))
+		crumb_lock.discard(self.crumb_lock_id)
+		return True
+	
+
+
+	class IO(object):
+
+		def __init__(self, crumb):			
+			#pass main crumb self (all values same with 'self.crumb' prefix)
+			self.crumb = crumb
+
+		# @utilities.crumbLockDec
+		@utilities.timing
+		def write(self):
+			'''
+			write crumb to filesystem
+			'''		
+			# make sure has key
+			if self.crumb.key == None:
+				logging.info("crumb does not have a key, aborting write")
+				raise Exception("no key provided")
+
+			# check first if exists, then suggest update
+			if self.crumb.exists == True:
+				logging.info("crumb exists, consider using update() method")
+				raise IOError("crumb exists")
+
+			# write crumb file
+			with env.begin(write=True) as txn:
+				txn.put(self.crumb.id, self.crumb.value)
+			
+			# set exists to True
+			self.crumb.exists = True
+
+			logging.info("successful write key: {key}".format(key=self.crumb.key))
+			return True		
+			
+
+
+		# @utilities.crumbLockDec
+		@utilities.timing
+		def get(self):
+			'''
+			retrieve crumb from filesystem
+			'''
+			# get and retrieve
+			if self.crumb.exists == True:
+				with env.begin(write=False) as txn:
+					self.crumb.value = txn.get(self.crumb.id)
+				logging.info("successful get key: {key}".format(key=self.crumb.key))
+				return self.crumb.value
+
+			else:
+				raise IOError("crumb does not exist")
+			
+			
+			
+		# @utilities.crumbLockDec
+		@utilities.timing
+		def update(self):
+			'''
+			write crumb to filesystem
+			'''
+			if self.crumb.exists == True:
+				with env.begin(write=True) as txn:
+					txn.put(self.crumb.id, self.crumb.value, overwrite=True)
+				logging.info("successful update key: {key}".format(key=self.crumb.key))
+				return True
+			else:
+				raise IOError("crumb does not exist")
+
+
+
+		# @utilities.crumbLockDec
+		@utilities.timing
+		def delete(self):
+			'''
+			delete crumb from filesystem
+			'''
+			if self.crumb.exists == True:
+				with env.begin(write=True) as txn:
+					txn.delete(self.crumb.id)
+				# self.crumb.rollback.rollback_dir_creation()			
+				logging.info("successful crumb deletion: {key}".format(key=self.crumb.key))
 				return True
 			else:
 				raise IOError("crumb does not exist")
