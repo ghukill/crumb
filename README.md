@@ -16,6 +16,7 @@ Everything is wrapped in Twisted server, with end goal of providing crumbDB as s
 * Python Twisted Server (pip install)
 * python flask
 * python-kafka (pip install)
+* zookeeper (apt-get install)
 
 
 ## To install:
