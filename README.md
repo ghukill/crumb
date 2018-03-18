@@ -22,19 +22,19 @@ Everything is wrapped in Twisted server, with end goal of providing crumbDB as s
 ## To install:
 * <a href="http://kafka.apache.org/downloads.html">download Apache Kafka</a>
 * fire up zookeeper and apache kafka from unzipped / untarred kafka directory:
-  * start zookeeper: bin/zookeeper-server-start.sh config/zookeeper.properties
-  * start kafka server: bin/kafka-server-start.sh config/server.properties
-  * create kafka topic ('crumb_air' is default): bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic crumb_air --partitions 1 --replication-factor 1
-* start twisted server that houses most of the moving parts: python crumb_server.py
+  * start zookeeper:`bin/zookeeper-server-start.sh config/zookeeper.properties`
+  * start kafka server: `bin/kafka-server-start.sh config/server.properties`
+  * create kafka topic ('crumb_air' is default): `bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic crumb_air --partitions 1 --replication-factor 1`
+* start twisted server that houses most of the moving parts: `python crumb_server.py`
 
 
 ## Usage
 
 ### HTTP / REST Flask API 
-* write crumb: http://[host]/[prefix if applicable]/write/[index]/?key=foo&value=bar
-* get crumb: http://[host]/[prefix if applicable]/get/[index]/?key=foo
-* update crumb: http://[host]/[prefix if applicable]/update/[index]/?key=foo&value=zag
-* delete crumb: http://[host]/[prefix if applicable]/update/[index]/?key=foo
+* write crumb: `http://[host]/[prefix if applicable]/write/[index]/?key=foo&value=bar`
+* get crumb: `http://[host]/[prefix if applicable]/get/[index]/?key=foo`
+* update crumb: `http://[host]/[prefix if applicable]/update/[index]/?key=foo&value=zag`
+* delete crumb: `http://[host]/[prefix if applicable]/update/[index]/?key=foo`
 
 ### Console API - through Kafka
 
